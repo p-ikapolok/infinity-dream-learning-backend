@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc", 
-    "start": "node dist/server.js", 
+    "build": "tsc",
+    "start": "node dist/server.js",
     "postinstall": "npm run build"
   },
   "author": "Peter Ikapolok",
@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.3.5",
