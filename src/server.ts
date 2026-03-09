@@ -19,7 +19,7 @@ app.use(express.json());
 
 // Example root route
 app.get("/", (req, res) => {
-  res.send("Your backend is live!");
+  res.send("Hello Peter!");
 });
 
 // Example API route
