@@ -39,3 +39,5 @@ coverage/
 
 # Secrets folder (optional)
 secrets/
+
+/src/generated/prisma

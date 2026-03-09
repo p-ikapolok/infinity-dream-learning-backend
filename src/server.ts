@@ -1,17 +1,30 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// Allow only your frontend domain(s)
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173"
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true
+  })
+);
+
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
-
+// Example root route
 app.get("/", (req, res) => {
-  res.send("Backend is live!");
+  res.send("Your backend is live!");
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Example API route
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "Hello from backend!" });
+});
+
+export default app;
