@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import express, { Application } from "express";
 import http from "http";
 import cors from "cors";
@@ -9,8 +8,9 @@ import authRoutes from "./routes/auth";
 import courseRoutes from "./routes/courses";
 import classroomRoutes from "./routes/classroom";
 
-dotenv.config();
-
+// ----------------------
+// App Setup
+// ----------------------
 const app: Application = express();
 
 app.use(cors());
@@ -21,23 +21,20 @@ app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/classroom", classroomRoutes);
 
-const PORT: number = Number(process.env.PORT) || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 
-const server = http.createServer(app);
-
-
-// PostgreSQL connection
+// ----------------------
+// PostgreSQL Setup
+// ----------------------
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });
 
 // Test DB connection
 const connectDatabase = async () => {
   try {
-    await pool.connect();
+    await pool.query("SELECT 1"); // safer than pool.connect() in deployment
     console.log("PostgreSQL connected");
   } catch (error) {
     console.error("Database connection error:", error);
@@ -45,15 +42,17 @@ const connectDatabase = async () => {
   }
 };
 
+// ----------------------
+// HTTP & Socket.io Setup
+// ----------------------
+const server = http.createServer(app);
 
-// Socket.io setup
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
-
 
 // Classroom namespace
 io.of("/classroom").on("connection", (socket) => {
@@ -61,18 +60,12 @@ io.of("/classroom").on("connection", (socket) => {
 
   socket.on("join", ({ classroomId, user }) => {
     socket.join(classroomId);
-
-    io.of("/classroom")
-      .to(classroomId)
-      .emit("participant-joined", { user, id: socket.id });
+    io.of("/classroom").to(classroomId).emit("participant-joined", { user, id: socket.id });
   });
 
   socket.on("leave", ({ classroomId, user }) => {
     socket.leave(classroomId);
-
-    io.of("/classroom")
-      .to(classroomId)
-      .emit("participant-left", { user, id: socket.id });
+    io.of("/classroom").to(classroomId).emit("participant-left", { user, id: socket.id });
   });
 
   socket.on("message", ({ classroomId, message }) => {
@@ -88,14 +81,12 @@ io.of("/classroom").on("connection", (socket) => {
   });
 });
 
-
-// Start server
+// ----------------------
+// Start Server
+// ----------------------
 const startServer = async () => {
   await connectDatabase();
-
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 };
 
 startServer();
