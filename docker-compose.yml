@@ -6,7 +6,7 @@ services:
     image: postgres:15
     restart: unless-stopped
     environment:
-      POSTGRES_DB: silicon_world
+      POSTGRES_DB: infinity_dream
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -25,14 +25,12 @@ services:
     restart: unless-stopped
     ports:
       - "4000:4000"
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/silicon_world
-      JWT_SECRET: devsecret
-      TIMEZONE: Africa/Nairobi
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    env_file:
+      - .env   # Use .env file for all secrets
     depends_on:
       - postgres
       - redis
+    command: sh -c "npm install && npm run build && npm run start:prod"
 
 volumes:
   postgres-data:
