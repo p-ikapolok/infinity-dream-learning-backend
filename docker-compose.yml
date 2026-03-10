@@ -2,18 +2,6 @@ version: "3.8"
 
 services:
 
-  postgres:
-    image: postgres:15
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: infinity_dream
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
   redis:
     image: redis:7
     restart: unless-stopped
@@ -26,11 +14,7 @@ services:
     ports:
       - "4000:4000"
     env_file:
-      - .env   # Use .env file for all secrets
+      - .env   # Make sure DATABASE_URL points to your Render PostgreSQL
     depends_on:
-      - postgres
       - redis
     command: sh -c "npm install && npm run build && npm run start:prod"
-
-volumes:
-  postgres-data:
