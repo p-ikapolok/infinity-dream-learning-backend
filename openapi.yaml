@@ -3,43 +3,149 @@ openapi: 3.0.1
 info:
   title: Infinity Dream Learning Backend API
   version: 1.0.0
+  description: Backend API for Infinity Dream Learning Platform
 
 servers:
   - url: http://localhost:4000/api
+    description: Local development
+  - url: https://your-app.onrender.com/api
+    description: Production
 
 paths:
 
   /auth/register:
     post:
       summary: Register user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
       responses:
         '200':
           description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  token:
+                    type: string
 
   /auth/login:
     post:
       summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
       responses:
         '200':
           description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  token:
+                    type: string
 
   /courses:
     post:
       summary: Create a course
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
       responses:
         '200':
           description: Course created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courseId:
+                    type: string
+                  title:
+                    type: string
 
   /lessons:
     post:
       summary: Create lesson (set scheduleNextSunday or scheduledRelease)
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - courseId
+                - title
+              properties:
+                courseId:
+                  type: string
+                title:
+                  type: string
+                content:
+                  type: string
+                scheduleNextSunday:
+                  type: boolean
+                scheduledRelease:
+                  type: string
+                  format: date-time
       responses:
         '200':
           description: Lesson created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lessonId:
+                    type: string
+                  title:
+                    type: string
 
   /lessons/{id}:
     get:
@@ -53,15 +159,48 @@ paths:
       responses:
         '200':
           description: Lesson returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lessonId:
+                    type: string
+                  title:
+                    type: string
+                  content:
+                    type: string
+                  published:
+                    type: boolean
 
   /groups:
     post:
       summary: Create group
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
       responses:
         '200':
           description: Group created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groupId:
+                    type: string
+                  name:
+                    type: string
 
   /groups/{id}/join:
     post:
@@ -74,6 +213,18 @@ paths:
           required: true
           schema:
             type: string
+      responses:
+        '200':
+          description: Joined group successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groupId:
+                    type: string
+                  userId:
+                    type: string
 
   /teams/suggest/{courseId}:
     get:
@@ -84,37 +235,168 @@ paths:
           required: true
           schema:
             type: string
+      responses:
+        '200':
+          description: Suggested teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    teamId:
+                      type: string
+                    members:
+                      type: array
+                      items:
+                        type: string
 
   /uploads/presign:
     post:
       summary: Get S3 presigned upload URL
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                contentType:
+                  type: string
       responses:
         '200':
           description: Presigned URL returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                  key:
+                    type: string
 
   /ai/chat:
     post:
       summary: Chat with AI assistant
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
   /ai/embedding:
     post:
       summary: Create embedding for a lesson
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lessonId:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Embedding created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  embeddingId:
+                    type: string
 
   /calendar/event:
     post:
       summary: Create calendar event
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - startTime
+                - endTime
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                startTime:
+                  type: string
+                  format: date-time
+                endTime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+                  title:
+                    type: string
 
   /calendar/today:
     get:
       summary: Get today's events
       security:
         - bearerAuth: []
+      responses:
+        '200':
+          description: Events for today
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    eventId:
+                      type: string
+                    title:
+                      type: string
+                    startTime:
+                      type: string
+                      format: date-time
+                    endTime:
+                      type: string
+                      format: date-time
 
 components:
   securitySchemes:
