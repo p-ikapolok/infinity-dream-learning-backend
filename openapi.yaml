@@ -8,8 +8,8 @@ info:
 servers:
   - url: http://localhost:4000/api
     description: Local development
-  - url: https://your-app.onrender.com/api
-    description: Production
+  - url: https://infinity-dream-learning.onrender.com/api
+    description: Production (Render deployment)
 
 paths:
 
@@ -110,7 +110,7 @@ paths:
 
   /lessons:
     post:
-      summary: Create lesson (set scheduleNextSunday or scheduledRelease)
+      summary: Create lesson (scheduleNextSunday or scheduledRelease)
       security:
         - bearerAuth: []
       requestBody:
