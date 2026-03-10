@@ -1,7 +1,7 @@
 openapi: 3.0.1
 
 info:
-  title: Silicon World Backend API
+  title: Infinity Dream Learning Backend API
   version: 1.0.0
 
 servers:
