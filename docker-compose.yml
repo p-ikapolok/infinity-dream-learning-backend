@@ -2,19 +2,30 @@ version: "3.8"
 
 services:
 
+  # ----------------------
+  # Redis Service
+  # ----------------------
   redis:
     image: redis:7
     restart: unless-stopped
     ports:
       - "6379:6379"
 
+  # ----------------------
+  # Backend Service
+  # ----------------------
   backend:
     build: .
     restart: unless-stopped
     ports:
       - "4000:4000"
     env_file:
-      - .env   # Make sure DATABASE_URL points to your Render PostgreSQL
+      - .env   # Contains DATABASE_URL pointing to Render PostgreSQL
     depends_on:
       - redis
     command: sh -c "npm install && npm run build && npm run start:prod"
+
+# No local Postgres needed since using Render hosted database
+
+volumes:
+  # Redis can use default ephemeral storage; no volume required unless needed
