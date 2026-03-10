@@ -1,0 +1,124 @@
+openapi: 3.0.1
+
+info:
+  title: Silicon World Backend API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:4000/api
+
+paths:
+
+  /auth/register:
+    post:
+      summary: Register user
+      responses:
+        '200':
+          description: Registration successful
+
+  /auth/login:
+    post:
+      summary: Login user
+      responses:
+        '200':
+          description: Login successful
+
+  /courses:
+    post:
+      summary: Create a course
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Course created
+
+  /lessons:
+    post:
+      summary: Create lesson (set scheduleNextSunday or scheduledRelease)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lesson created
+
+  /lessons/{id}:
+    get:
+      summary: Get lesson (checks publication & access)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lesson returned
+
+  /groups:
+    post:
+      summary: Create group
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Group created
+
+  /groups/{id}/join:
+    post:
+      summary: Join group
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+  /teams/suggest/{courseId}:
+    get:
+      summary: Suggest teams
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+
+  /uploads/presign:
+    post:
+      summary: Get S3 presigned upload URL
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Presigned URL returned
+
+  /ai/chat:
+    post:
+      summary: Chat with AI assistant
+      security:
+        - bearerAuth: []
+
+  /ai/embedding:
+    post:
+      summary: Create embedding for a lesson
+
+  /calendar/event:
+    post:
+      summary: Create calendar event
+      security:
+        - bearerAuth: []
+
+  /calendar/today:
+    get:
+      summary: Get today's events
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
