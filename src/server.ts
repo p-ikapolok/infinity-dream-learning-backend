@@ -1,94 +1,81 @@
-import express, { Application } from "express";
-import http from "http";
-import cors from "cors";
-import { Server } from "socket.io";
-import { Pool } from "pg";
+import dotenv from "dotenv";
+dotenv.config();
 
+import express, { Application } from "express";
+import cors from "cors";
+import http from "http";
+
+import { connectDB } from "./config/db";
+import scheduler from "./scheduler/scheduler";
+import { startWorker } from "./scheduler/worker";
+import attachSocket from "./sockets/socketServer";
+
+// Routes
 import authRoutes from "./routes/auth";
 import courseRoutes from "./routes/courses";
-import classroomRoutes from "./routes/classroom";
+import lessonRoutes from "./routes/lessons";
+import groupRoutes from "./routes/groups";
+import teamRoutes from "./routes/teams";
+import uploadRoutes from "./routes/uploads";
+import aiRoutes from "./routes/ai";
+import calendarRoutes from "./routes/calendar";
 
-// ----------------------
-// App Setup
-// ----------------------
 const app: Application = express();
 
 app.use(cors());
 app.use(express.json());
 
-// API Routes
+/*
+API ROUTES
+*/
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
-app.use("/api/classroom", classroomRoutes);
+app.use("/api/lessons", lessonRoutes);
+app.use("/api/groups", groupRoutes);
+app.use("/api/teams", teamRoutes);
+app.use("/api/uploads", uploadRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/calendar", calendarRoutes);
 
-const PORT = Number(process.env.PORT) || 4000;
+/*
+PORT
+*/
+const PORT: number = Number(process.env.PORT) || 4000;
 
-// ----------------------
-// PostgreSQL Setup
-// ----------------------
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-});
+/*
+CREATE HTTP SERVER
+*/
+const server = http.createServer(app);
 
-// Test DB connection
-const connectDatabase = async () => {
+/*
+SOCKET.IO
+*/
+attachSocket(server, app);
+
+/*
+START SERVER
+*/
+const startServer = async () => {
   try {
-    await pool.query("SELECT 1"); // safer than pool.connect() in deployment
-    console.log("PostgreSQL connected");
-  } catch (error) {
-    console.error("Database connection error:", error);
+    // connect PostgreSQL
+    await connectDB();
+
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+
+      // start scheduler
+      scheduler.start();
+
+      // start worker if redis exists
+      if (process.env.REDIS_URL) {
+        startWorker();
+      }
+    });
+
+  } catch (err) {
+    console.error("Server start error:", err);
     process.exit(1);
   }
 };
 
-// ----------------------
-// HTTP & Socket.io Setup
-// ----------------------
-const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
-
-// Classroom namespace
-io.of("/classroom").on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-
-  socket.on("join", ({ classroomId, user }) => {
-    socket.join(classroomId);
-    io.of("/classroom").to(classroomId).emit("participant-joined", { user, id: socket.id });
-  });
-
-  socket.on("leave", ({ classroomId, user }) => {
-    socket.leave(classroomId);
-    io.of("/classroom").to(classroomId).emit("participant-left", { user, id: socket.id });
-  });
-
-  socket.on("message", ({ classroomId, message }) => {
-    io.of("/classroom").to(classroomId).emit("message", message);
-  });
-
-  socket.on("screen-share", (data) => {
-    io.of("/classroom").to(data.classroomId).emit("screen-share", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
-  });
-});
-
-// ----------------------
-// Start Server
-// ----------------------
-const startServer = async () => {
-  await connectDatabase();
-  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-};
-
 startServer();
-
-export { pool };
