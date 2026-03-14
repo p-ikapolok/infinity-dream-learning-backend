@@ -41,3 +41,5 @@ coverage/
 secrets/
 
 /src/generated/prisma
+
+/src/generated/prisma
