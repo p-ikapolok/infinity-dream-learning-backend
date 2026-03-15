@@ -15,7 +15,7 @@
     //"types": [],
     // For nodejs:
     // "lib": ["esnext"],
-     "types": ["node", "express"],
+     "types": ["node"],
     // and npm install -D @types/node
 
     // Other Outputs
@@ -42,5 +42,5 @@
   }, 
   
   "include": ["src"],
-  "exclude": ["node_modules", "prisma"]
+  "exclude": ["node_modules", "prisma", "dist"]
 }
