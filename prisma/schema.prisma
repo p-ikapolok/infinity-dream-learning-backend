@@ -21,3 +21,23 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  category    String
+  teacherId   Int
+  teacher     User     @relation(fields: [teacherId], references: [id])
+  cohorts     Cohort[]
+}
+
+model Cohort {
+  id             Int      @id @default(autoincrement())
+  name           String
+  courseId       Int
+  course         Course   @relation(fields: [courseId], references: [id])
+  startDate      DateTime
+  graduationDate DateTime
+}
